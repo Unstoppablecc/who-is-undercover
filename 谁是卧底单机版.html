@@ -1,0 +1,1343 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f7f9">
+  <title>谁是卧底发牌器</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7f9;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #65758b;
+      --accent: #006d77;
+      --accent-strong: #00535c;
+      --warning: #a15c00;
+      --danger: #b42318;
+      --success: #157347;
+      --card: #ffffff;
+      --card-open: #dff7e8;
+      --card-double-open: #fff3bf;
+      --card-out: #ffe5e5;
+      --border: #ccd6dd;
+      --field: #f8fafc;
+      --overlay: rgba(23, 32, 51, 0.48);
+      --shadow: 0 10px 28px rgba(30, 41, 59, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    .app {
+      width: min(100%, 1040px);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 18px 14px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .settings,
+    .burst {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .settings {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(10px);
+    }
+
+    .count-grid,
+    .burst-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .count-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    label {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    select,
+    input,
+    button {
+      min-height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font: inherit;
+    }
+
+    select,
+    input {
+      width: 100%;
+      min-width: 0;
+      padding: 0 12px;
+      color: var(--ink);
+      background: var(--field);
+      font-size: 17px;
+      font-weight: 720;
+    }
+
+    select {
+      padding-right: 34px;
+    }
+
+    button {
+      padding: 0 14px;
+      color: #ffffff;
+      background: var(--accent);
+      font-weight: 780;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.72;
+    }
+
+    button:active:not(:disabled) {
+      background: var(--accent-strong);
+      transform: translateY(1px);
+    }
+
+    .secondary-button {
+      color: var(--accent);
+      background: #eef8f7;
+      border-color: rgba(0, 109, 119, 0.24);
+    }
+
+    .secondary-button:active:not(:disabled) {
+      color: #ffffff;
+      background: var(--accent);
+    }
+
+    .settings-body {
+      display: grid;
+      gap: 8px;
+    }
+
+    .settings.is-collapsed .settings-body,
+    .settings.is-collapsed .summary,
+    .settings.is-collapsed .word-status:not(.is-error) {
+      display: none;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .summary {
+      min-height: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .pill {
+      min-height: 28px;
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 760;
+    }
+
+    .pill strong {
+      margin-left: 4px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .game-status {
+      min-height: 0;
+      display: none;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-weight: 850;
+      line-height: 1.35;
+    }
+
+    .game-status.is-active {
+      display: block;
+    }
+
+    .game-status.is-civilian {
+      color: var(--success);
+      background: #e8f5ee;
+      border: 1px solid rgba(21, 115, 71, 0.24);
+    }
+
+    .game-status.is-undercover {
+      color: var(--danger);
+      background: #fff0ee;
+      border: 1px solid rgba(180, 35, 24, 0.22);
+    }
+
+    .game-status-title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .reveal-list {
+      display: grid;
+      gap: 6px;
+      margin-top: 9px;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 760;
+    }
+
+    .reveal-row {
+      display: grid;
+      gap: 3px;
+      padding: 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.58);
+      overflow-wrap: anywhere;
+    }
+
+    .word-status {
+      min-height: 22px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .word-status.is-error {
+      color: #b42318;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      aspect-ratio: 3 / 4;
+      width: 100%;
+      min-height: 148px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      box-shadow: 0 5px 16px rgba(30, 41, 59, 0.08);
+      color: var(--ink);
+      display: grid;
+      place-items: center;
+      padding: 10px;
+      cursor: pointer;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+    }
+
+    .card:active {
+      transform: scale(0.98);
+    }
+
+    .card.is-open {
+      background: var(--card-open);
+      border-color: rgba(21, 115, 71, 0.32);
+    }
+
+    .card.has-clicked {
+      background: var(--card-open);
+      border-color: rgba(21, 115, 71, 0.32);
+    }
+
+    .card.has-double-clicked {
+      background: var(--card-double-open);
+      border-color: rgba(161, 92, 0, 0.34);
+    }
+
+    .card.is-out {
+      background: var(--card-out);
+      border-color: #f0a6a6;
+      box-shadow: none;
+      color: var(--danger);
+      opacity: 0.9;
+    }
+
+    .card-value {
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      white-space: pre-line;
+      text-align: center;
+      font-size: clamp(30px, 11vw, 52px);
+      font-weight: 850;
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .card.is-open .card-value {
+      font-size: clamp(24px, 8vw, 42px);
+      color: var(--success);
+    }
+
+    .card.is-out .card-value {
+      font-size: clamp(20px, 6.5vw, 34px);
+      color: var(--danger);
+    }
+
+    .card.is-open .card-value.is-long-word {
+      font-size: clamp(18px, 5.8vw, 30px);
+    }
+
+    .card.is-open .card-value.is-extra-long-word {
+      font-size: clamp(15px, 4.8vw, 24px);
+      line-height: 1.2;
+    }
+
+    .result-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: var(--overlay);
+    }
+
+    .result-overlay.is-active {
+      display: grid;
+    }
+
+    .result-card {
+      width: min(100%, 340px);
+      min-height: 210px;
+      display: grid;
+      gap: 14px;
+      align-content: center;
+      padding: 22px;
+      border-radius: 8px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(23, 32, 51, 0.28);
+      text-align: center;
+    }
+
+    .result-title {
+      font-size: clamp(30px, 10vw, 46px);
+      line-height: 1.08;
+      font-weight: 900;
+    }
+
+    .result-title.is-success {
+      color: var(--success);
+    }
+
+    .result-title.is-fail {
+      color: var(--danger);
+    }
+
+    .result-text {
+      min-height: 24px;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 720;
+    }
+
+    @media (max-width: 639px) {
+      .app {
+        padding: 10px 8px 22px;
+        gap: 10px;
+      }
+
+      header {
+        padding-top: 2px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .settings,
+      .burst {
+        gap: 6px;
+        padding: 7px;
+      }
+
+      .settings-body {
+        gap: 6px;
+      }
+
+      .count-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      label {
+        gap: 4px;
+        font-size: 11px;
+      }
+
+      select,
+      input,
+      button {
+        min-height: 34px;
+        font-size: 14px;
+      }
+
+      select,
+      input {
+        padding: 0 8px;
+      }
+
+      button {
+        padding: 0 8px;
+      }
+
+      .action-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .action-row .summary {
+        grid-column: 1 / -1;
+      }
+
+      .pill {
+        min-height: 22px;
+        padding: 2px 7px;
+        font-size: 11px;
+      }
+
+      .pill strong {
+        font-size: 12px;
+      }
+
+      .word-status {
+        min-height: 18px;
+        font-size: 11px;
+      }
+
+      .cards {
+        grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+        gap: 8px;
+      }
+
+      .card {
+        min-height: 132px;
+      }
+    }
+
+    @media (min-width: 640px) {
+      .app {
+        padding: 28px 22px 40px;
+      }
+
+      .burst-grid {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+      }
+
+      .cards {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="settings" aria-label="人数设置">
+      <div id="settingsBody" class="settings-body">
+        <div class="count-grid">
+          <label for="playerCount">
+            玩家数量
+            <select id="playerCount"></select>
+          </label>
+          <label for="undercoverCount">
+            卧底数量
+            <select id="undercoverCount"></select>
+          </label>
+          <label for="blankCount">
+            空白词数量
+            <select id="blankCount"></select>
+          </label>
+        </div>
+
+        <label for="wordTopic">
+          词语类型
+          <input id="wordTopic" type="text" value="" autocomplete="off">
+        </label>
+
+        <label for="wordTopicPreset">
+          类型推荐
+          <select id="wordTopicPreset">
+            <option value="">请选择</option>
+            <option value="零食饮料">零食饮料</option>
+            <option value="外卖美食">外卖美食</option>
+            <option value="奶茶咖啡">奶茶咖啡</option>
+            <option value="夜市小吃">夜市小吃</option>
+            <option value="家常菜">家常菜</option>
+            <option value="厨房用品">厨房用品</option>
+            <option value="校园生活">校园生活</option>
+            <option value="职场摸鱼">职场摸鱼</option>
+            <option value="网络热梗">网络热梗</option>
+            <option value="表情包梗">表情包梗</option>
+            <option value="直播带货">直播带货</option>
+            <option value="网购快递">网购快递</option>
+            <option value="影视综艺">影视综艺</option>
+            <option value="动漫游戏">动漫游戏</option>
+            <option value="桌游棋牌">桌游棋牌</option>
+            <option value="密室逃脱">密室逃脱</option>
+            <option value="运动健身">运动健身</option>
+            <option value="旅行城市">旅行城市</option>
+            <option value="交通工具">交通工具</option>
+            <option value="节日习俗">节日习俗</option>
+            <option value="童年回忆">童年回忆</option>
+            <option value="电子产品">电子产品</option>
+            <option value="家用电器">家用电器</option>
+            <option value="办公用品">办公用品</option>
+            <option value="卫浴用品">卫浴用品</option>
+            <option value="医院药店">医院药店</option>
+            <option value="宠物动物">宠物动物</option>
+            <option value="植物花草">植物花草</option>
+            <option value="情绪性格">情绪性格</option>
+            <option value="职业身份">职业身份</option>
+            <option value="家庭关系">家庭关系</option>
+            <option value="约会场景">约会场景</option>
+            <option value="历史人物">历史人物</option>
+            <option value="神话传说">神话传说</option>
+            <option value="超能力">超能力</option>
+            <option value="KTV点歌">KTV点歌</option>
+            <option value="酒桌游戏">酒桌游戏</option>
+            <option value="火锅局">火锅局</option>
+            <option value="烧烤摊">烧烤摊</option>
+            <option value="宿舍神器">宿舍神器</option>
+            <option value="社恐社牛">社恐社牛</option>
+            <option value="恋爱脑">恋爱脑</option>
+            <option value="朋友圈人设">朋友圈人设</option>
+            <option value="相亲现场">相亲现场</option>
+            <option value="婚礼现场">婚礼现场</option>
+            <option value="过年亲戚">过年亲戚</option>
+            <option value="爸妈语录">爸妈语录</option>
+            <option value="老板画饼">老板画饼</option>
+            <option value="打工人日常">打工人日常</option>
+            <option value="会议黑话">会议黑话</option>
+            <option value="群聊名场面">群聊名场面</option>
+            <option value="短视频套路">短视频套路</option>
+            <option value="追星现场">追星现场</option>
+            <option value="粉圈用语">粉圈用语</option>
+            <option value="游戏装备">游戏装备</option>
+            <option value="游戏角色">游戏角色</option>
+            <option value="电竞黑话">电竞黑话</option>
+            <option value="健身房黑话">健身房黑话</option>
+            <option value="减肥食物">减肥食物</option>
+            <option value="养生玄学">养生玄学</option>
+            <option value="玄学好运">玄学好运</option>
+            <option value="恐怖片元素">恐怖片元素</option>
+            <option value="武侠江湖">武侠江湖</option>
+            <option value="仙侠修真">仙侠修真</option>
+            <option value="科幻设定">科幻设定</option>
+            <option value="魔法道具">魔法道具</option>
+            <option value="侦探推理">侦探推理</option>
+            <option value="古装宫斗">古装宫斗</option>
+            <option value="童话故事">童话故事</option>
+            <option value="经典动画">经典动画</option>
+            <option value="国民品牌">国民品牌</option>
+            <option value="商场店铺">商场店铺</option>
+            <option value="便利店商品">便利店商品</option>
+            <option value="早餐摊">早餐摊</option>
+            <option value="水果蔬菜">水果蔬菜</option>
+            <option value="甜品蛋糕">甜品蛋糕</option>
+            <option value="地方特产">地方特产</option>
+            <option value="城市地标">城市地标</option>
+            <option value="景区项目">景区项目</option>
+            <option value="海边度假">海边度假</option>
+            <option value="露营装备">露营装备</option>
+            <option value="猫狗行为">猫狗行为</option>
+            <option value="奇葩发明">奇葩发明</option>
+            <option value="没用小知识">没用小知识</option>
+            <option value="人生错觉">人生错觉</option>
+          </select>
+        </label>
+
+        <label for="wordDifficulty">
+          难度
+          <select id="wordDifficulty">
+            <option value="low">低难度</option>
+            <option value="medium" selected>中等难度</option>
+            <option value="high">高难度</option>
+            <option value="extreme">超高难度</option>
+          </select>
+        </label>
+
+        <label for="wordLength">
+          词语字数
+          <select id="wordLength">
+            <option value="0" selected>不限</option>
+            <option value="2">2字</option>
+            <option value="3">3字</option>
+            <option value="4">4字</option>
+            <option value="5">5字</option>
+          </select>
+        </label>
+
+        <label for="deepseekModel">
+          模型
+          <select id="deepseekModel">
+            <option value="deepseek-v4-flash" selected>Flash（速度快）</option>
+            <option value="deepseek-v4-pro">Pro（质量高）</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="action-row">
+        <div id="summary" class="summary" aria-live="polite"></div>
+        <button id="dealCards" type="button">重新发牌</button>
+        <button id="fetchWords" type="button">换词</button>
+        <button id="toggleSettings" class="secondary-button" type="button" aria-expanded="true" aria-controls="settingsBody">隐藏设置</button>
+      </div>
+      <div id="gameStatus" class="game-status" aria-live="assertive"></div>
+      <div id="wordStatus" class="word-status" role="status"></div>
+    </section>
+
+    <section class="burst" aria-label="爆词校验">
+      <div class="burst-grid">
+        <label for="burstWord">
+          爆词
+          <input id="burstWord" type="text" autocomplete="off" placeholder="输入平民词">
+        </label>
+        <button id="checkBurst" type="button">校验</button>
+      </div>
+    </section>
+
+    <section id="cards" class="cards" aria-live="polite"></section>
+
+    <div id="resultOverlay" class="result-overlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+      <div class="result-card">
+        <div id="resultTitle" class="result-title"></div>
+        <div id="resultText" class="result-text"></div>
+        <button id="closeResult" type="button">关闭</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const maxPlayers = 15;
+    const longPressMs = 650;
+    const blankDisplayText = "空白";
+    const generatedHistoryStorageKey = "undercoverGeneratedWordHistory";
+    const maxGeneratedHistoryWords = 1000;
+    const deepseekEndpoint = "https://api.deepseek.com/chat/completions";
+    const deepseekApiKey = "";
+
+    const playerCountSelect = document.querySelector("#playerCount");
+    const undercoverCountSelect = document.querySelector("#undercoverCount");
+    const blankCountSelect = document.querySelector("#blankCount");
+    const dealCardsButton = document.querySelector("#dealCards");
+    const fetchWordsButton = document.querySelector("#fetchWords");
+    const settingsPanel = document.querySelector(".settings");
+    const toggleSettingsButton = document.querySelector("#toggleSettings");
+    const wordTopicInput = document.querySelector("#wordTopic");
+    const wordTopicPresetSelect = document.querySelector("#wordTopicPreset");
+    const wordDifficultySelect = document.querySelector("#wordDifficulty");
+    const wordLengthSelect = document.querySelector("#wordLength");
+    const deepseekModelSelect = document.querySelector("#deepseekModel");
+    const burstWordInput = document.querySelector("#burstWord");
+    const checkBurstButton = document.querySelector("#checkBurst");
+    const cardsContainer = document.querySelector("#cards");
+    const summary = document.querySelector("#summary");
+    const gameStatus = document.querySelector("#gameStatus");
+    const wordStatus = document.querySelector("#wordStatus");
+    const resultOverlay = document.querySelector("#resultOverlay");
+    const resultTitle = document.querySelector("#resultTitle");
+    const resultText = document.querySelector("#resultText");
+    const closeResultButton = document.querySelector("#closeResult");
+
+    let civilianWord = "潘毅富";
+    let undercoverWord = "史琴";
+    let generatedWordHistory = loadGeneratedWordHistory();
+    let currentDeck = [];
+    let gameOver = false;
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function setSettingsCollapsed(isCollapsed) {
+      settingsPanel.classList.toggle("is-collapsed", isCollapsed);
+      toggleSettingsButton.textContent = isCollapsed ? "显示设置" : "隐藏设置";
+      toggleSettingsButton.setAttribute("aria-expanded", String(!isCollapsed));
+    }
+
+    function numberValue(select, fallback) {
+      if (select.value === "") {
+        return fallback;
+      }
+
+      const value = Number(select.value);
+      return Number.isFinite(value) ? value : fallback;
+    }
+
+    function fillNumberSelect(select, min, max, selectedValue) {
+      const safeValue = clamp(selectedValue, min, max);
+      select.replaceChildren();
+
+      for (let value = min; value <= max; value += 1) {
+        const option = document.createElement("option");
+        option.value = String(value);
+        option.textContent = String(value);
+        select.append(option);
+      }
+
+      select.value = String(safeValue);
+    }
+
+    function getCounts() {
+      const players = numberValue(playerCountSelect, 6);
+      const undercovers = numberValue(undercoverCountSelect, 1);
+      const blanks = numberValue(blankCountSelect, 0);
+      return {
+        players,
+        undercovers,
+        blanks,
+        civilians: players - undercovers - blanks
+      };
+    }
+
+    function syncCountSelects(changedId) {
+      const players = numberValue(playerCountSelect, 6);
+      let undercovers = numberValue(undercoverCountSelect, 1);
+      let blanks = numberValue(blankCountSelect, 0);
+
+      undercovers = clamp(undercovers, 0, players);
+      blanks = clamp(blanks, 0, players);
+
+      if (undercovers + blanks > players) {
+        if (changedId === "undercoverCount") {
+          blanks = players - undercovers;
+        } else {
+          undercovers = players - blanks;
+        }
+      }
+
+      fillNumberSelect(undercoverCountSelect, 0, players - blanks, undercovers);
+      fillNumberSelect(blankCountSelect, 0, players - Number(undercoverCountSelect.value), blanks);
+    }
+
+    function shuffle(items) {
+      const result = [...items];
+
+      for (let index = result.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+      }
+
+      return result;
+    }
+
+    function createDeck() {
+      const counts = getCounts();
+      const roles = [];
+
+      for (let index = 0; index < counts.civilians; index += 1) {
+        roles.push({ role: "civilian", word: civilianWord, eliminated: false, clickCount: 0 });
+      }
+
+      for (let index = 0; index < counts.undercovers; index += 1) {
+        roles.push({ role: "undercover", word: undercoverWord, eliminated: false, clickCount: 0 });
+      }
+
+      for (let index = 0; index < counts.blanks; index += 1) {
+        roles.push({ role: "blank", word: blankDisplayText, eliminated: false, clickCount: 0 });
+      }
+
+      return shuffle(roles);
+    }
+
+    function getActiveStats() {
+      const stats = {
+        total: 0,
+        civilian: 0,
+        undercover: 0,
+        blank: 0
+      };
+
+      currentDeck.forEach((cardData) => {
+        if (cardData.eliminated) {
+          return;
+        }
+
+        stats.total += 1;
+
+        if (stats[cardData.role] !== undefined) {
+          stats[cardData.role] += 1;
+        }
+      });
+
+      return stats;
+    }
+
+    function setGameStatus(message, type = "") {
+      gameStatus.textContent = message;
+      gameStatus.className = "game-status";
+
+      if (!message) {
+        return;
+      }
+
+      gameStatus.classList.add("is-active");
+
+      if (type) {
+        gameStatus.classList.add(`is-${type}`);
+      }
+    }
+
+    function getCardsByRole(role) {
+      return currentDeck
+        .map((cardData, index) => ({ ...cardData, number: index + 1 }))
+        .filter((cardData) => cardData.role === role);
+    }
+
+    function setGameOverStatus(message, type) {
+      const title = document.createElement("div");
+      const revealList = document.createElement("div");
+      const revealRow = document.createElement("div");
+      const undercovers = getCardsByRole("undercover");
+      const numbers = undercovers.length > 0
+        ? undercovers.map((cardData) => `${cardData.number}号`).join("、")
+        : "没有玩家";
+
+      gameStatus.textContent = "";
+      gameStatus.className = "game-status is-active";
+
+      if (type) {
+        gameStatus.classList.add(`is-${type}`);
+      }
+
+      title.className = "game-status-title";
+      title.textContent = message;
+      revealList.className = "reveal-list";
+      revealRow.className = "reveal-row";
+      revealRow.textContent = `${numbers}是卧底`;
+
+      revealList.append(revealRow);
+
+      gameStatus.append(title, revealList);
+    }
+
+    function updateSummary() {
+      const counts = getCounts();
+      const activeStats = getActiveStats();
+      const items = [
+        ["玩家", counts.players],
+        ["平民", counts.civilians],
+        ["卧底", counts.undercovers],
+        ["空白", counts.blanks],
+        ["剩余", activeStats.total]
+      ];
+
+      summary.replaceChildren();
+
+      items.forEach(([label, value]) => {
+        const pill = document.createElement("span");
+        const strong = document.createElement("strong");
+        pill.className = "pill";
+        pill.append(`${label}`);
+        strong.textContent = String(value);
+        pill.append(strong);
+        summary.append(pill);
+      });
+    }
+
+    function evaluateGame() {
+      const activeStats = getActiveStats();
+      gameOver = false;
+
+      if (activeStats.total > 0 && activeStats.undercover === 0 && activeStats.blank === 0) {
+        gameOver = true;
+        setGameOverStatus("游戏结束，平民胜利", "civilian");
+      } else if (activeStats.total > 0 && activeStats.civilian <= 1) {
+        gameOver = true;
+        setGameOverStatus("游戏结束，卧底胜利", "undercover");
+      } else {
+        setGameStatus("");
+      }
+
+      updateSummary();
+    }
+
+    function closeCard(card, value, number) {
+      card.dataset.open = "false";
+      card.classList.remove("is-open");
+      value.classList.remove("is-long-word", "is-extra-long-word");
+      value.textContent = number;
+    }
+
+    function setCardWord(value, word) {
+      const length = Array.from(word).length;
+      value.classList.remove("is-long-word", "is-extra-long-word");
+
+      if (length >= 9) {
+        value.classList.add("is-extra-long-word");
+      } else if (length >= 5) {
+        value.classList.add("is-long-word");
+      }
+
+      value.textContent = formatCardWord(word);
+    }
+
+    function formatCardWord(word) {
+      const chars = Array.from(word);
+
+      if (chars.length <= 3) {
+        return word;
+      }
+
+      const rows = [];
+
+      for (let index = 0; index < chars.length; index += 3) {
+        rows.push(chars.slice(index, index + 3).join(""));
+      }
+
+      return rows.join("\n");
+    }
+
+    function getEliminatedText(role) {
+      if (role === "undercover") {
+        return "卧底出局";
+      }
+
+      if (role === "civilian") {
+        return "平民出局";
+      }
+
+      if (role === "blank") {
+        return "空白出局";
+      }
+
+      return "出局";
+    }
+
+    function toggleCardEliminated(cardData, card, value, number) {
+      if (gameOver) {
+        return;
+      }
+
+      cardData.eliminated = !cardData.eliminated;
+      card.classList.toggle("is-out", cardData.eliminated);
+      card.dataset.out = String(cardData.eliminated);
+      closeCard(card, value, number);
+
+      if (cardData.eliminated) {
+        value.textContent = getEliminatedText(cardData.role);
+        card.setAttribute("aria-label", `第 ${number} 张卡牌已出局`);
+      } else {
+        card.setAttribute("aria-label", `第 ${number} 张卡牌`);
+      }
+
+      evaluateGame();
+    }
+
+    function createCard(cardData, index) {
+      const card = document.createElement("button");
+      const value = document.createElement("span");
+      const number = String(index + 1);
+      let pressTimer = 0;
+      let startX = 0;
+      let startY = 0;
+      let ignoreNextClick = false;
+
+      card.type = "button";
+      card.className = "card";
+      card.dataset.open = "false";
+      card.dataset.out = "false";
+      card.dataset.role = cardData.role;
+      card.dataset.clickCount = "0";
+      card.setAttribute("aria-label", `第 ${number} 张卡牌`);
+
+      value.className = "card-value";
+      value.textContent = number;
+      card.append(value);
+
+      function clearLongPress() {
+        window.clearTimeout(pressTimer);
+        pressTimer = 0;
+      }
+
+      card.addEventListener("pointerdown", (event) => {
+        if (gameOver || (typeof event.button === "number" && event.button !== 0)) {
+          return;
+        }
+
+        startX = event.clientX;
+        startY = event.clientY;
+        clearLongPress();
+        pressTimer = window.setTimeout(() => {
+          ignoreNextClick = true;
+          clearLongPress();
+
+          if (navigator.vibrate) {
+            navigator.vibrate(18);
+          }
+
+          toggleCardEliminated(cardData, card, value, number);
+        }, longPressMs);
+      });
+
+      card.addEventListener("pointermove", (event) => {
+        if (!pressTimer) {
+          return;
+        }
+
+        const distance = Math.hypot(event.clientX - startX, event.clientY - startY);
+
+        if (distance > 14) {
+          clearLongPress();
+        }
+      });
+
+      ["pointerup", "pointercancel", "pointerleave"].forEach((eventName) => {
+        card.addEventListener(eventName, clearLongPress);
+      });
+
+      card.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+      });
+
+      card.addEventListener("click", (event) => {
+        if (ignoreNextClick) {
+          event.preventDefault();
+          ignoreNextClick = false;
+          return;
+        }
+
+        if (cardData.eliminated) {
+          return;
+        }
+
+        const isOpen = card.dataset.open === "true";
+        card.dataset.open = String(!isOpen);
+        card.classList.toggle("is-open", !isOpen);
+
+        if (isOpen) {
+          closeCard(card, value, number);
+        } else {
+          if (!gameOver) {
+            cardData.clickCount += 1;
+            card.dataset.clickCount = String(cardData.clickCount);
+            card.classList.add("has-clicked");
+            card.classList.toggle("has-double-clicked", cardData.clickCount >= 2);
+          }
+
+          setCardWord(value, cardData.word);
+        }
+      });
+
+      return card;
+    }
+
+    function renderCards() {
+      gameOver = false;
+      currentDeck = createDeck();
+      cardsContainer.replaceChildren();
+      currentDeck.forEach((cardData, index) => {
+        cardsContainer.append(createCard(cardData, index));
+      });
+      evaluateGame();
+    }
+
+    function sanitizeWord(word) {
+      return word.trim().replace(/^[`"'“”]+|[`"'“”]+$/g, "");
+    }
+
+    function normalizeWord(word) {
+      return word.trim().replace(/\s+/g, "").toLocaleLowerCase("zh-CN");
+    }
+
+    function getWordLength(word) {
+      return Array.from(word.trim()).length;
+    }
+
+    function saveGeneratedWordHistory() {
+      try {
+        localStorage.setItem(generatedHistoryStorageKey, JSON.stringify(generatedWordHistory));
+      } catch (error) {
+        console.warn("保存历史词语失败", error);
+      }
+    }
+
+    function loadGeneratedWordHistory() {
+      const defaultHistory = [civilianWord, undercoverWord];
+
+      try {
+        const savedHistory = localStorage.getItem(generatedHistoryStorageKey);
+
+        if (!savedHistory) {
+          return defaultHistory;
+        }
+
+        const parsedHistory = JSON.parse(savedHistory);
+
+        if (!Array.isArray(parsedHistory) || parsedHistory.length > maxGeneratedHistoryWords) {
+          localStorage.removeItem(generatedHistoryStorageKey);
+          return defaultHistory;
+        }
+
+        const cleanedHistory = [];
+
+        parsedHistory.forEach((word) => {
+          const cleanWord = sanitizeWord(String(word));
+
+          if (
+            cleanWord &&
+            !cleanedHistory.some((historyWord) => normalizeWord(historyWord) === normalizeWord(cleanWord))
+          ) {
+            cleanedHistory.push(cleanWord);
+          }
+        });
+
+        return cleanedHistory.length > 0 ? cleanedHistory : defaultHistory;
+      } catch (error) {
+        console.warn("读取历史词语失败", error);
+        return defaultHistory;
+      }
+    }
+
+    function hasGeneratedWord(word) {
+      const normalizedWord = normalizeWord(word);
+      return generatedWordHistory.some((historyWord) => normalizeWord(historyWord) === normalizedWord);
+    }
+
+    function addGeneratedWordsToHistory(...words) {
+      if (generatedWordHistory.length + words.length > maxGeneratedHistoryWords) {
+        generatedWordHistory = [];
+      }
+
+      words.forEach((word) => {
+        const cleanWord = sanitizeWord(word);
+
+        if (cleanWord && !hasGeneratedWord(cleanWord)) {
+          generatedWordHistory.push(cleanWord);
+        }
+      });
+
+      saveGeneratedWordHistory();
+    }
+
+    function getDifficultyPrompt() {
+      const difficultyPrompts = {
+        low: "低难度：两个词差异要比较明显，普通玩家容易通过描述区分，但仍属于同一大类。",
+        medium: "中等难度：两个词有明显共同点，也有清晰差异，描述时会产生一定混淆。",
+        high: "高难度：两个词关系更微妙，共同特征更多，差异需要通过细节描述才能区分，但不能是近义词或强绑定关系。",
+        extreme: "超高难度：允许近义词，两个词可以高度相似且非常容易混淆；但仍必须避免完全同义词、别名、上下位词、只差一个字和强绑定关系。"
+      };
+
+      return difficultyPrompts[wordDifficultySelect.value] || difficultyPrompts.medium;
+    }
+
+    function parseDeepSeekWords(text) {
+      const undercoverMatch = text.match(/卧底词\s*[:：]\s*([^；;\n\r]+)/);
+      const civilianMatch = text.match(/平民词\s*[:：]\s*([^；;\n\r]+)/);
+
+      if (!undercoverMatch || !civilianMatch) {
+        return null;
+      }
+
+      return {
+        undercover: sanitizeWord(undercoverMatch[1]),
+        civilian: sanitizeWord(civilianMatch[1])
+      };
+    }
+
+    function setWordStatus(message, isError = false) {
+      wordStatus.textContent = message;
+      wordStatus.classList.toggle("is-error", isError);
+    }
+
+    function showBurstResult(success) {
+      resultTitle.textContent = success ? "爆词成功" : "爆词失败";
+      resultTitle.className = `result-title ${success ? "is-success" : "is-fail"}`;
+      resultText.textContent = success ? "已命中平民词" : "未命中平民词";
+      resultOverlay.classList.add("is-active");
+    }
+
+    function checkBurstWord() {
+      const guess = normalizeWord(burstWordInput.value);
+      const target = normalizeWord(civilianWord);
+      showBurstResult(guess !== "" && guess === target);
+      burstWordInput.value = "";
+    }
+
+    async function fetchWordsFromDeepSeek() {
+      const wordTopic = wordTopicInput.value.trim() || "不限";
+      const historyWords = generatedWordHistory.length > 0 ? generatedWordHistory.join("、") : "无";
+      const difficultyPrompt = getDifficultyPrompt();
+      const preferredWordLength = Number(wordLengthSelect.value);
+      const wordLengthPrompt = preferredWordLength > 0
+        ? `字数偏好：优先生成不超过${preferredWordLength}个汉字的自然词语；卧底词和平民词不要求字数相同。如果为了词语质量必须超过，可以返回更自然的词。`
+        : "";
+
+      if (!deepseekApiKey) {
+        setWordStatus("未配置 API Key", true);
+        return;
+      }
+
+      fetchWordsButton.disabled = true;
+      setWordStatus("换词中");
+
+      try {
+        const response = await fetch(deepseekEndpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${deepseekApiKey}`
+          },
+          body: JSON.stringify({
+            model: deepseekModelSelect.value,
+            messages: [
+              {
+                role: "system",
+                content: "你只返回一行中文文本，不要解释，不要 Markdown。"
+              },
+              {
+                role: "user",
+                content: `为谁是卧底游戏生成一组词语。
+词语类型：${wordTopic}。
+难度要求：${difficultyPrompt}
+${wordLengthPrompt}
+
+
+两个词必须满足:
+1. 属于同一大类，玩家能通过描述产生混淆。
+2. 低难度、中等难度、高难度不能是同义词、近义词、上下位词、反义词；超高难度允许近义词，但不能是完全同义词。
+3. 不能只差一个字，不能是别名、职业和具体人物、品牌和产品、地点和建筑这种强绑定关系。
+4. 差异要明显，但不能完全无关。
+5. 适合口头描述，普通人能理解。
+
+禁止使用以下历史词语，也不要生成与它们明显相关的词：${historyWords}。
+要求卧底词和平民词都必须是新词。
+严格按这个格式返回：卧底词：ABC；平民词：EFG;
+不要返回英文、数字、标点或解释。`
+              }
+            ],
+            thinking: {
+              type: "disabled"
+            },
+            stream: false,
+            temperature: 0.8,
+            max_tokens: 80
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const content = data?.choices?.[0]?.message?.content || "";
+        const words = parseDeepSeekWords(content);
+
+        if (!words || !words.undercover || !words.civilian) {
+          throw new Error("返回格式不符合要求");
+        }
+
+        if (hasGeneratedWord(words.undercover) || hasGeneratedWord(words.civilian)) {
+          throw new Error("返回词语与历史重复，请重新获取词语");
+        }
+
+        undercoverWord = words.undercover;
+        civilianWord = words.civilian;
+        addGeneratedWordsToHistory(undercoverWord, civilianWord);
+        setWordStatus("词语已更新，已重新发牌");
+        renderCards();
+      } catch (error) {
+        setWordStatus(`换词失败：${error.message}`, true);
+      } finally {
+        fetchWordsButton.disabled = false;
+      }
+    }
+
+    fillNumberSelect(playerCountSelect, 1, maxPlayers, 6);
+    syncCountSelects();
+    renderCards();
+
+    [playerCountSelect, undercoverCountSelect, blankCountSelect].forEach((select) => {
+      select.addEventListener("change", (event) => {
+        syncCountSelects(event.target.id);
+        renderCards();
+      });
+    });
+
+    dealCardsButton.addEventListener("click", renderCards);
+    fetchWordsButton.addEventListener("click", fetchWordsFromDeepSeek);
+    toggleSettingsButton.addEventListener("click", () => {
+      setSettingsCollapsed(!settingsPanel.classList.contains("is-collapsed"));
+    });
+    wordTopicInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        fetchWordsFromDeepSeek();
+      }
+    });
+    wordTopicPresetSelect.addEventListener("change", () => {
+      wordTopicInput.value = wordTopicPresetSelect.value;
+    });
+    checkBurstButton.addEventListener("click", checkBurstWord);
+    burstWordInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        checkBurstWord();
+      }
+    });
+    closeResultButton.addEventListener("click", () => {
+      resultOverlay.classList.remove("is-active");
+    });
+    resultOverlay.addEventListener("click", (event) => {
+      if (event.target === resultOverlay) {
+        resultOverlay.classList.remove("is-active");
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        resultOverlay.classList.remove("is-active");
+      }
+    });
+
+    setSettingsCollapsed(window.matchMedia("(max-width: 639px)").matches);
+  </script>
+</body>
+</html>
