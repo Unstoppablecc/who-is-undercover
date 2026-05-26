@@ -1,0 +1,1762 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>谁是卧底发牌器</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #607086;
+      --line: #d7e0ea;
+      --line-strong: #bcc9d8;
+      --field: #f8fafc;
+      --accent: #0f766e;
+      --accent-dark: #0b5f59;
+      --accent-soft: #e5f4f1;
+      --blue: #2563eb;
+      --blue-soft: #eaf1ff;
+      --gold: #a16207;
+      --gold-soft: #fff4d6;
+      --green: #e4f7ec;
+      --yellow: #fff1b8;
+      --red: #ffe4e1;
+      --red-strong: #b42318;
+      --shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+      --shadow-soft: 0 4px 14px rgba(15, 23, 42, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .app {
+      width: min(100%, 1080px);
+      margin: 0 auto;
+      padding: 10px 10px calc(18px + env(safe-area-inset-bottom));
+      display: grid;
+      gap: 10px;
+    }
+
+    section {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow-soft);
+      padding: 10px;
+    }
+
+    .settings {
+      position: sticky;
+      top: max(6px, env(safe-area-inset-top));
+      z-index: 5;
+      border-color: var(--line-strong);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.11);
+    }
+
+    .settings::before {
+      content: "";
+      display: block;
+      height: 3px;
+      margin: -10px -10px 10px;
+      border-radius: 8px 8px 0 0;
+      background: var(--accent);
+    }
+
+    .grid,
+    .settings-body,
+    .room-grid,
+    .burst-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .settings-body {
+      margin-top: 8px;
+    }
+
+    .room-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      align-items: end;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    label {
+      display: grid;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      min-width: 0;
+    }
+
+    input,
+    select,
+    button {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font: inherit;
+      font-size: 15px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-width: 0;
+      background: var(--field);
+      color: var(--ink);
+      padding: 0 10px;
+      font-weight: 700;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      background: #ffffff;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+    }
+
+    button {
+      color: #ffffff;
+      background: var(--accent);
+      border-color: var(--accent);
+      padding: 0 10px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(15, 118, 110, 0.18);
+      transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    button:focus-visible {
+      outline: 3px solid rgba(15, 118, 110, 0.22);
+      outline-offset: 2px;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      box-shadow: none;
+    }
+
+    button:active:not(:disabled) {
+      background: var(--accent-dark);
+      border-color: var(--accent-dark);
+      transform: translateY(1px);
+      box-shadow: 0 1px 4px rgba(15, 118, 110, 0.16);
+    }
+
+    .secondary {
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-color: rgba(15, 118, 110, 0.22);
+      box-shadow: none;
+    }
+
+    .danger {
+      background: var(--red-strong);
+      border-color: var(--red-strong);
+      box-shadow: 0 3px 8px rgba(180, 35, 24, 0.16);
+    }
+
+    .status {
+      min-height: 22px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .status.error {
+      color: var(--red-strong);
+      font-weight: 750;
+    }
+
+    .room-badge {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .pill {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      min-height: 28px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+    }
+
+    .pill strong {
+      color: var(--ink);
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.95fr) minmax(0, 1.2fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .my-card-container {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      min-height: 240px;
+    }
+
+    .vote-panel {
+      min-height: 240px;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .vote-panel.empty {
+      border: 1px dashed var(--line-strong);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .my-card {
+      min-height: 240px;
+      width: 100%;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      border-radius: 8px;
+      border: 1px solid var(--line-strong);
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      text-align: center;
+      user-select: none;
+      touch-action: manipulation;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .my-card::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border: 1px solid rgba(15, 118, 110, 0.18);
+      border-radius: 6px;
+      pointer-events: none;
+    }
+
+    .my-card.has-seen {
+      background: var(--green);
+      border-color: #9bd8b5;
+    }
+
+    .my-card.has-seen-twice {
+      background: var(--yellow);
+      border-color: #e0bd55;
+    }
+
+    .my-card-value {
+      position: relative;
+      z-index: 1;
+      white-space: pre-line;
+      overflow-wrap: anywhere;
+      font-size: 46px;
+      line-height: 1.12;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .my-card-value.word {
+      font-size: 36px;
+      color: #157347;
+    }
+
+    .players {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+      gap: 8px;
+    }
+
+    .player-card {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 82px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+    }
+
+    .player-card.out {
+      background: var(--red);
+      border-color: #f0a6a6;
+    }
+
+    .player-number {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .player-name {
+      color: var(--ink);
+      font-size: 16px;
+      font-weight: 750;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .result {
+      display: none;
+      border-color: #f0d28a;
+      background: var(--gold-soft);
+      color: #713f12;
+      font-weight: 850;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .vote-card {
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      height: 100%;
+      min-height: 240px;
+    }
+
+    .vote-card .vote-section {
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    .vote-card .vote-status {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--blue);
+      text-align: center;
+      background: var(--blue-soft);
+      border: 1px solid #c8d7ff;
+      border-radius: 6px;
+      padding: 7px;
+    }
+
+    .vote-card .vote-result {
+      font-size: 16px;
+      font-weight: 850;
+      color: var(--gold);
+      text-align: center;
+      background: var(--gold-soft);
+      border: 1px solid #f0d28a;
+      border-radius: 6px;
+      padding: 12px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.45;
+    }
+
+    .vote-card .vote-counts,
+    .vote-voters {
+      font-size: 13px;
+      font-weight: 750;
+      color: var(--accent-dark);
+      text-align: center;
+      background: var(--accent-soft);
+      border: 1px solid rgba(15, 118, 110, 0.18);
+      border-radius: 6px;
+      padding: 8px;
+      line-height: 1.45;
+    }
+
+    .vote-card .vote-details {
+      background: #f7f9fc;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px;
+    }
+
+    .vote-card .vote-details-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .vote-card .vote-details-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+    }
+
+    .vote-card .vote-detail-item {
+      font-size: 12px;
+      color: var(--ink);
+      background: #ffffff;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+    }
+
+    .player-card button {
+      width: 100%;
+      min-height: 34px;
+      box-sizing: border-box;
+    }
+
+    .player-card button.selected {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .burst-grid {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+    }
+
+    .burst {
+      border-color: var(--line);
+    }
+
+    .settings.collapsed .settings-body,
+    .settings.collapsed .room-grid {
+      display: none;
+    }
+
+    .settings.collapsed::before {
+      margin-bottom: 8px;
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        padding: 6px 6px calc(12px + env(safe-area-inset-bottom));
+        gap: 8px;
+      }
+
+      section {
+        padding: 8px;
+      }
+
+      .settings {
+        top: max(4px, env(safe-area-inset-top));
+      }
+
+      .settings::before {
+        margin: -8px -8px 8px;
+      }
+
+      .room-grid,
+      .settings-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .action-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        margin-top: 6px;
+      }
+
+      .room-badge {
+        grid-column: 1 / -1;
+      }
+
+      input,
+      select,
+      button {
+        min-height: 34px;
+        font-size: 14px;
+      }
+
+      label {
+        gap: 3px;
+        font-size: 11px;
+      }
+
+      .status {
+        margin-top: 6px;
+        font-size: 12px;
+      }
+
+      .main-content {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .my-card-container,
+      .vote-panel {
+        min-height: 0;
+      }
+
+      .my-card {
+        min-height: 240px;
+        padding: 16px;
+      }
+
+      .my-card-value {
+        font-size: 38px;
+      }
+
+      .my-card-value.word {
+        font-size: 30px;
+      }
+
+      .vote-card {
+        min-height: 126px;
+        padding: 10px;
+      }
+
+      .players {
+        grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+        gap: 6px;
+      }
+
+      .player-card {
+        min-height: 76px;
+        padding: 8px;
+      }
+
+      .player-card .player-number {
+        font-size: 13px;
+      }
+
+      .player-card .player-name {
+        font-size: 15px;
+        font-weight: 750;
+      }
+
+      .burst-grid {
+        grid-template-columns: 1fr auto;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .room-grid,
+      .settings-grid,
+      .action-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .my-card {
+        min-height: 220px;
+      }
+
+      .my-card-value {
+        font-size: 34px;
+      }
+
+      .my-card-value.word {
+        font-size: 27px;
+      }
+
+      .players {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 18px;
+    }
+
+    .modal-content {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px;
+      min-width: 280px;
+      max-width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.22);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 850;
+      margin-bottom: 12px;
+      color: var(--ink);
+    }
+
+    .modal-message {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .modal-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .modal-btn:hover {
+      background: var(--accent-dark);
+    }
+
+    .burst-success .modal-title {
+      color: #157347;
+    }
+
+    .burst-fail .modal-title {
+      color: var(--red-strong);
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="settings" id="settingsPanel">
+      <div class="room-grid">
+        <label>
+          昵称
+          <input id="playerName" type="text" value="" placeholder="输入昵称（最多5字）" maxlength="5" autocomplete="off">
+        </label>
+        <label>
+          房间码
+          <input id="roomCodeInput" type="text" value="" placeholder="加入时填写" inputmode="numeric" autocomplete="off">
+        </label>
+        <button id="createRoom" type="button">创建房间</button>
+        <button id="joinRoom" type="button">加入房间</button>
+      </div>
+
+      <div id="settingsBody" class="settings-body">
+        <div class="settings-grid">
+          <label>
+            玩家人数
+            <select id="playerCount">
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6" selected>6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+              <option value="13">13</option>
+              <option value="14">14</option>
+              <option value="15">15</option>
+            </select>
+          </label>
+          <label>
+            卧底数量
+            <select id="undercoverCount">
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+              <option value="13">13</option>
+              <option value="14">14</option>
+            </select>
+          </label>
+          <label>
+            空白词数量
+            <select id="blankCount">
+              <option value="0" selected>0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+              <option value="13">13</option>
+              <option value="14">14</option>
+            </select>
+          </label>
+          <label>
+            词语类型
+            <input id="wordTopic" type="text" value="" autocomplete="off">
+          </label>
+          <label>
+            类型推荐
+            <select id="wordTopicPreset">
+              <option value="">请选择</option>
+              <option value="零食饮料">零食饮料</option>
+              <option value="外卖美食">外卖美食</option>
+              <option value="奶茶咖啡">奶茶咖啡</option>
+              <option value="夜市小吃">夜市小吃</option>
+              <option value="校园生活">校园生活</option>
+              <option value="职场摸鱼">职场摸鱼</option>
+              <option value="网络热梗">网络热梗</option>
+              <option value="密室逃脱">密室逃脱</option>
+              <option value="KTV点歌">KTV点歌</option>
+              <option value="酒桌游戏">酒桌游戏</option>
+              <option value="火锅局">火锅局</option>
+              <option value="老板画饼">老板画饼</option>
+              <option value="打工人日常">打工人日常</option>
+              <option value="电竞黑话">电竞黑话</option>
+              <option value="人生错觉">人生错觉</option>
+              <option value="奇葩发明">奇葩发明</option>
+              <option value="侦探推理">侦探推理</option>
+            </select>
+          </label>
+          <label>
+            难度
+            <select id="wordDifficulty">
+              <option value="low">低难度</option>
+              <option value="medium" selected>中等难度</option>
+              <option value="high">高难度</option>
+              <option value="extreme">超高难度</option>
+            </select>
+          </label>
+          <label>
+            词语字数
+            <select id="wordLength">
+              <option value="0" selected>不限</option>
+              <option value="2">2字</option>
+              <option value="3">3字</option>
+              <option value="4">4字</option>
+              <option value="5">5字</option>
+            </select>
+          </label>
+          <label>
+            模型
+            <select id="deepseekModel">
+              <option value="deepseek-v4-flash" selected>Flash（速度快）</option>
+              <option value="deepseek-v4-pro">Pro（质量高）</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button id="startGame" type="button">开始游戏</button>
+        <button id="resetGame" class="secondary" type="button">重开</button>
+        <button id="leaveRoom" class="secondary" type="button">退出房间</button>
+        <button id="toggleSettings" class="secondary" type="button">隐藏设置</button>
+        <div id="roomInfo" class="room-badge"></div>
+      </div>
+      <div id="status" class="status"></div>
+    </section>
+
+    <section id="result" class="result"></section>
+
+    <div class="main-content">
+      <div class="my-card-container">
+        <button id="myCard" class="my-card" type="button">
+          <span id="myCardValue" class="my-card-value">先创建或加入房间</span>
+        </button>
+      </div>
+      <div id="votePanel" class="vote-panel"></div>
+    </div>
+
+    <section>
+      <div id="players" class="players"></div>
+    </section>
+
+    <section class="burst">
+      <div class="burst-grid">
+        <label>
+          爆词
+          <input id="burstWord" type="text" autocomplete="off" placeholder="输入平民词">
+        </label>
+        <button id="checkBurst" type="button">校验</button>
+      </div>
+    </section>
+
+    <div id="burstModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div id="burstModalTitle" class="modal-title">爆词结果</div>
+        <div id="burstModalMessage" class="modal-message"></div>
+        <button id="burstModalClose" type="button" class="modal-btn">确定</button>
+      </div>
+    </div>
+
+    <div id="gameEndModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div id="gameEndModalTitle" class="modal-title">游戏结束</div>
+        <div id="gameEndModalMessage" class="modal-message"></div>
+        <button id="gameEndModalClose" type="button" class="modal-btn">确定</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const state = {
+      roomCode: "",
+      playerId: "",
+      clientId: getOrCreateClientId(),
+      data: null,
+      pollTimer: 0,
+      wordVisible: false,
+      seenCount: 0,
+      lastWord: "",
+      lastGameId: null,
+      lastBurstRecordLength: 0,
+      settingsSyncing: false
+    };
+
+    const $ = (id) => document.querySelector(`#${id}`);
+    const playerNameInput = $("playerName");
+    const roomCodeInput = $("roomCodeInput");
+    const createRoomButton = $("createRoom");
+    const joinRoomButton = $("joinRoom");
+    const startGameButton = $("startGame");
+    const resetGameButton = $("resetGame");
+    const leaveRoomButton = $("leaveRoom");
+    const toggleSettingsButton = $("toggleSettings");
+    const settingsPanel = $("settingsPanel");
+    const roomInfo = $("roomInfo");
+    const statusBox = $("status");
+    const resultBox = $("result");
+    const playersBox = $("players");
+    const votePanel = $("votePanel");
+    const myCard = $("myCard");
+    const myCardValue = $("myCardValue");
+    const burstModal = $("burstModal");
+    const burstModalTitle = $("burstModalTitle");
+    const burstModalMessage = $("burstModalMessage");
+    const burstModalClose = $("burstModalClose");
+    const gameEndModal = $("gameEndModal");
+    const gameEndModalTitle = $("gameEndModalTitle");
+    const gameEndModalMessage = $("gameEndModalMessage");
+    const gameEndModalClose = $("gameEndModalClose");
+    const playerCountSelect = $("playerCount");
+    const undercoverCountSelect = $("undercoverCount");
+    const blankCountSelect = $("blankCount");
+    const wordTopicInput = $("wordTopic");
+    const wordTopicPresetSelect = $("wordTopicPreset");
+    const wordDifficultySelect = $("wordDifficulty");
+    const wordLengthSelect = $("wordLength");
+    const deepseekModelSelect = $("deepseekModel");
+    const burstWordInput = $("burstWord");
+    const checkBurstButton = $("checkBurst");
+
+    function getOrCreateClientId() {
+      const key = "undercoverClientId";
+      let clientId = localStorage.getItem(key);
+      if (!clientId) {
+        clientId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+        localStorage.setItem(key, clientId);
+      }
+      return clientId;
+    }
+
+    function savePlayerName() {
+      const name = playerNameInput.value.trim();
+      if (name) {
+        localStorage.setItem("undercoverPlayerName", name);
+      }
+    }
+
+    function loadPlayerName() {
+      return localStorage.getItem("undercoverPlayerName") || "";
+    }
+
+    function saveSession() {
+      savePlayerName();
+      if (!state.roomCode || !state.playerId) {
+        return;
+      }
+      localStorage.setItem("undercoverRoomSession", JSON.stringify({
+        roomCode: state.roomCode,
+        playerId: state.playerId,
+        name: playerNameInput.value.trim()
+      }));
+    }
+
+    function clearSession() {
+      localStorage.removeItem("undercoverRoomSession");
+    }
+
+    function setStatus(message, isError = false) {
+      statusBox.textContent = message;
+      statusBox.classList.toggle("error", isError);
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        method: options.method || "GET",
+        headers: { "Content-Type": "application/json" },
+        body: options.body ? JSON.stringify(options.body) : undefined
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || `HTTP ${response.status}`);
+      }
+      return data;
+    }
+
+    function getName() {
+      return playerNameInput.value.trim() || "玩家";
+    }
+
+    function currentSettings() {
+      return {
+        player_id: state.playerId,
+        player_count: Number(playerCountSelect.value),
+        undercover_count: Number(undercoverCountSelect.value),
+        blank_count: Number(blankCountSelect.value),
+        topic: wordTopicInput.value.trim(),
+        difficulty: wordDifficultySelect.value,
+        word_length: Number(wordLengthSelect.value),
+        model: deepseekModelSelect.value
+      };
+    }
+
+    async function createRoom() {
+      const data = await api("/api/rooms", {
+        method: "POST",
+        body: { name: getName(), client_id: state.clientId, ...currentSettings() }
+      });
+      state.playerId = data.player_id;
+      applyState(data.state);
+      startPolling();
+      saveSession();
+      setStatus("房间已创建");
+    }
+
+    async function joinRoom() {
+      const roomCode = roomCodeInput.value.trim();
+      if (!roomCode) {
+        setStatus("请输入房间码", true);
+        return;
+      }
+      const data = await api(`/api/rooms/${roomCode}/join`, {
+        method: "POST",
+        body: { name: getName(), client_id: state.clientId }
+      });
+      state.playerId = data.player_id;
+      applyState(data.state);
+      startPolling();
+      saveSession();
+      setStatus("已加入房间");
+    }
+
+    async function pollState() {
+      if (!state.roomCode || !state.playerId) {
+        return;
+      }
+      try {
+        const data = await api(`/api/rooms/${state.roomCode}/state?player_id=${encodeURIComponent(state.playerId)}`);
+        applyState(data);
+      } catch (error) {
+        if (error.message.includes("房间不存在") || error.message.includes("玩家不在房间内")) {
+          clearSession();
+          window.clearInterval(state.pollTimer);
+        }
+        throw error;
+      }
+    }
+
+    function startPolling() {
+      window.clearInterval(state.pollTimer);
+      state.pollTimer = window.setInterval(() => {
+        pollState().catch((error) => setStatus(error.message, true));
+      }, 1500);
+    }
+
+    async function startGame() {
+      if (!state.roomCode || !state.playerId) {
+        setStatus("请先创建或加入房间", true);
+        return;
+      }
+      startGameButton.disabled = true;
+      setStatus("生成词语并发牌中");
+      try {
+        const data = await api(`/api/rooms/${state.roomCode}/start`, {
+          method: "POST",
+          body: currentSettings()
+        });
+        state.wordVisible = false;
+        state.seenCount = 0;
+        applyState(data.state);
+        setStatus("游戏已开始");
+      } finally {
+        startGameButton.disabled = false;
+      }
+    }
+
+    async function resetGame() {
+      if (!state.roomCode || !state.playerId) {
+        return;
+      }
+      const data = await api(`/api/rooms/${state.roomCode}/reset`, {
+        method: "POST",
+        body: { player_id: state.playerId }
+      });
+      state.wordVisible = false;
+      state.seenCount = 0;
+      applyState(data.state);
+      setStatus("已重开，等待开始");
+    }
+
+    async function leaveRoom() {
+      if (!state.roomCode || !state.playerId) {
+        return;
+      }
+      const data = await api(`/api/rooms/${state.roomCode}/leave`, {
+        method: "POST",
+        body: { player_id: state.playerId }
+      });
+      if (data.left) {
+        state.wordVisible = false;
+        state.seenCount = 0;
+        state.lastGameId = null;
+        state.lastBurstRecordLength = 0;
+        renderBurstControls(null);
+        if (data.room_code === null) {
+          state.roomCode = "";
+          state.playerId = "";
+          state.data = null;
+          roomCodeInput.value = "";
+          saveSession();
+          setStatus("已退出房间");
+          [playerCountSelect, undercoverCountSelect, blankCountSelect, wordTopicInput, wordTopicPresetSelect, wordDifficultySelect, wordLengthSelect, deepseekModelSelect].forEach((control) => {
+            control.disabled = false;
+          });
+        } else {
+          state.playerId = "";
+          state.data = null;
+          setStatus("已退出房间");
+          [playerCountSelect, undercoverCountSelect, blankCountSelect, wordTopicInput, wordTopicPresetSelect, wordDifficultySelect, wordLengthSelect, deepseekModelSelect].forEach((control) => {
+            control.disabled = false;
+          });
+        }
+      }
+    }
+
+    async function eliminatePlayer(number) {
+      const data = await api(`/api/rooms/${state.roomCode}/eliminate`, {
+        method: "POST",
+        body: { player_id: state.playerId, number }
+      });
+      applyState(data.state);
+    }
+
+    async function castVote(number) {
+      const data = await api(`/api/rooms/${state.roomCode}/vote`, {
+        method: "POST",
+        body: { player_id: state.playerId, number }
+      });
+      applyState(data.state);
+      if (data.vote_result) {
+        const result = data.vote_result;
+        if (result.type === "multiple_eliminated") {
+          const names = result.eliminated_list.map((e) => {
+            const roleText = e.role === "undercover" ? "卧底" : e.role === "blank" ? "空白" : "平民";
+            return `${e.name}${roleText}`;
+          });
+          setStatus(`投票结束：${names.join("、")}同时出局`);
+        } else if (result.type === "eliminated") {
+          const roleText = result.role === "undercover" ? "卧底" : result.role === "blank" ? "空白" : "平民";
+          setStatus(`投票结束：${result.name}${roleText}出局`);
+        } else if (result.type === "tie") {
+          setStatus(`投票结束：${result.tied_numbers.join("、")}号玩家平票，无人出局`);
+        } else if (result.type === "draw") {
+          setStatus(`投票结束：${result.tied_numbers.join("、")}号玩家平票，卧底胜利！`);
+        }
+      } else {
+        setStatus("投票成功，等待其他玩家");
+      }
+    }
+
+    async function checkBurst() {
+      if (!state.roomCode || !state.playerId) {
+        setStatus("请先加入房间", true);
+        return;
+      }
+      if (!state.data || !state.data.my_can_burst) {
+        setStatus(burstDisabledText(state.data), true);
+        return;
+      }
+      const guess = burstWordInput.value.trim();
+      if (!guess) {
+        setStatus("请输入猜测的词语", true);
+        return;
+      }
+      const data = await api(`/api/rooms/${state.roomCode}/burst`, {
+        method: "POST",
+        body: { player_id: state.playerId, guess }
+      });
+      burstWordInput.value = "";
+      if (data.state) {
+        state.lastBurstRecordLength = (data.state.burst_record || []).length;
+        applyState(data.state);
+      }
+      if (data.burst_result) {
+        showBurstModal(data.burst_result);
+      }
+    }
+
+    const modalQueue = [];
+    let isModalShowing = false;
+    let currentModalTimer = null;
+
+    function processModalQueue() {
+      if (isModalShowing || modalQueue.length === 0) {
+        return;
+      }
+      const item = modalQueue.shift();
+      isModalShowing = true;
+      if (item.type === "burst") {
+        const modalContent = burstModal.querySelector(".modal-content");
+        modalContent.classList.remove("burst-success", "burst-fail");
+        if (item.result.success) {
+          burstModalTitle.textContent = "爆词成功";
+          modalContent.classList.add("burst-success");
+          burstModalMessage.textContent = `${item.result.player_name}爆词成功，与平民词一致！`;
+        } else {
+          burstModalTitle.textContent = "爆词失败";
+          modalContent.classList.add("burst-fail");
+          burstModalMessage.textContent = `${item.result.player_name}猜测的词语是「${item.result.guess}」，与平民词不一致！`;
+        }
+        burstModal.style.display = "flex";
+        currentModalTimer = setTimeout(() => {
+          hideCurrentModal();
+        }, 10000);
+      } else if (item.type === "gameEnd") {
+        const modalContent = gameEndModal.querySelector(".modal-content");
+        modalContent.classList.remove("burst-success", "burst-fail");
+        if (item.winner === "civilian") {
+          gameEndModalTitle.textContent = "游戏结束";
+          modalContent.classList.add("burst-success");
+          gameEndModalMessage.textContent = "平民胜利！";
+        } else {
+          gameEndModalTitle.textContent = "游戏结束";
+          modalContent.classList.add("burst-fail");
+          gameEndModalMessage.textContent = "卧底胜利！";
+        }
+        gameEndModal.style.display = "flex";
+        currentModalTimer = setTimeout(() => {
+          hideCurrentModal();
+        }, 10000);
+      }
+    }
+
+    function hideCurrentModal() {
+      if (currentModalTimer) {
+        clearTimeout(currentModalTimer);
+        currentModalTimer = null;
+      }
+      burstModal.style.display = "none";
+      gameEndModal.style.display = "none";
+      isModalShowing = false;
+      processModalQueue();
+    }
+
+    function showBurstModal(result) {
+      modalQueue.push({ type: "burst", result });
+      processModalQueue();
+    }
+
+    function showGameEndModal(winner, undercoverNumbers) {
+      modalQueue.push({ type: "gameEnd", winner, undercoverNumbers });
+      processModalQueue();
+    }
+
+    burstModalClose.addEventListener("click", hideCurrentModal);
+    burstModal.addEventListener("click", (e) => {
+      if (e.target === burstModal) hideCurrentModal();
+    });
+    gameEndModalClose.addEventListener("click", hideCurrentModal);
+    gameEndModal.addEventListener("click", (e) => {
+      if (e.target === gameEndModal) hideCurrentModal();
+    });
+
+    function applyState(nextState) {
+      const prevStatus = state.data ? state.data.status : null;
+      state.data = nextState;
+      state.roomCode = nextState.room_code;
+      roomCodeInput.value = nextState.room_code || roomCodeInput.value;
+      saveSession();
+
+      if (state.lastGameId !== nextState.game_id) {
+        const isFirstState = state.lastGameId === null;
+        state.lastGameId = nextState.game_id;
+        state.lastBurstRecordLength = isFirstState ? (nextState.burst_record || []).length : 0;
+      }
+
+      if (nextState.my_word !== state.lastWord) {
+        state.wordVisible = false;
+        state.seenCount = 0;
+        state.lastWord = nextState.my_word || "";
+      }
+
+      const burstRecord = nextState.burst_record || [];
+      if (burstRecord.length > state.lastBurstRecordLength) {
+        const newRecords = burstRecord.slice(state.lastBurstRecordLength);
+        state.lastBurstRecordLength = burstRecord.length;
+        newRecords.forEach((record) => showBurstModal(record));
+      }
+
+      if (prevStatus === "playing" && nextState.status === "ended") {
+        showGameEndModal(nextState.winner, nextState.undercover_numbers);
+      }
+
+      syncHostControls(nextState.is_host, nextState.status);
+      if (nextState.status === "waiting" && !state.settingsSyncing) {
+        syncSettingsValues(nextState.settings);
+      }
+      renderRoomInfo(nextState);
+      renderResult(nextState);
+      renderPlayers(nextState);
+      renderMyCard(nextState);
+      renderBurstControls(nextState);
+    }
+
+    function burstDisabledText(data) {
+      if (!data || !state.roomCode || !state.playerId) return "请先加入房间";
+      if (data.status === "waiting") return "游戏开始后才能爆词";
+      if (data.my_burst_used) return "本局爆词机会已用";
+      if (data.status === "ended") return "游戏结束后仅卧底或空白词玩家可以爆词";
+      return "只有出局的卧底或空白词玩家可以爆词";
+    }
+
+    function renderBurstControls(data) {
+      const canBurst = Boolean(data && data.my_can_burst);
+      burstWordInput.disabled = !canBurst;
+      checkBurstButton.disabled = !canBurst;
+      checkBurstButton.textContent = canBurst ? "校验" : data && data.my_burst_used ? "已爆词" : "校验";
+      if (canBurst) {
+        burstWordInput.placeholder = "输入平民词";
+      } else {
+        burstWordInput.value = "";
+        burstWordInput.placeholder = burstDisabledText(data);
+      }
+    }
+
+    function syncHostControls(isHost, status) {
+      const controls = [playerCountSelect, undercoverCountSelect, blankCountSelect, wordTopicInput, wordTopicPresetSelect, wordDifficultySelect, wordLengthSelect, deepseekModelSelect];
+      controls.forEach((control) => {
+        control.disabled = !isHost || status === "playing";
+      });
+      startGameButton.disabled = !isHost || status === "playing";
+      resetGameButton.disabled = !isHost;
+      leaveRoomButton.disabled = !state.roomCode;
+    }
+
+    function syncSettingsValues(settings) {
+      playerCountSelect.value = String(settings.player_count || 6);
+      undercoverCountSelect.value = String(settings.undercover_count);
+      blankCountSelect.value = String(settings.blank_count);
+      wordTopicInput.value = settings.topic || "";
+      wordDifficultySelect.value = settings.difficulty || "medium";
+      wordLengthSelect.value = String(settings.word_length || 0);
+      deepseekModelSelect.value = settings.model || "deepseek-v4-flash";
+    }
+
+    function renderRoomInfo(data) {
+      roomInfo.innerHTML = "";
+      const items = [
+        ["房间", data.room_code || "-"],
+        ["人数", `${data.players.length}/${data.settings.player_count || "-"}`],
+        ["我的号码", data.my_number || "-"],
+        ["身份", data.is_host ? "房主" : "玩家"],
+        ["状态", statusText(data.status)]
+      ];
+      items.forEach(([label, value]) => {
+        const pill = document.createElement("span");
+        pill.className = "pill";
+        pill.innerHTML = `${label}<strong>${value}</strong>`;
+        roomInfo.append(pill);
+      });
+    }
+
+    function statusText(status) {
+      if (status === "playing") return "进行中";
+      if (status === "ended") return "已结束";
+      return "等待中";
+    }
+
+    function renderResult(data) {
+      resultBox.className = "result";
+      resultBox.textContent = "";
+    }
+
+    function renderPlayers(data) {
+      playersBox.replaceChildren();
+      const voteInfo = data.vote_info || {};
+      const myNumber = data.my_number;
+      const isPlaying = data.status === "playing";
+      const activeCount = voteInfo.active_count || 0;
+      const myPlayer = data.players.find((p) => p.is_you);
+      const isMyEliminated = myPlayer ? myPlayer.eliminated : false;
+      const lastResult = voteInfo.last_result;
+
+      votePanel.classList.remove("empty");
+      votePanel.innerHTML = "";
+
+      if (data.status === "playing") {
+        const voteCard = document.createElement("div");
+        voteCard.className = "vote-card";
+
+        const voteStatus = document.createElement("div");
+        voteStatus.className = "vote-status";
+        voteStatus.textContent = `投票进度：${voteInfo.voted_count}/${activeCount}`;
+        voteCard.appendChild(voteStatus);
+
+        if (lastResult) {
+          let resultText;
+          if (lastResult.type === "draw") {
+            resultText = "三人平票，游戏结束";
+          } else if (lastResult.eliminated_list) {
+            const names = lastResult.eliminated_list.map((e) => {
+              const roleText = e.is_undercover ? "卧底" : e.is_blank ? "空白" : "平民";
+              return `${e.name}${roleText}`;
+            });
+            resultText = `${names.join("、")}同时出局`;
+          } else {
+            resultText = lastResult.is_undercover
+              ? `${lastResult.name}卧底出局`
+              : lastResult.is_blank
+              ? `${lastResult.name}空白出局`
+              : `${lastResult.name}平民出局`;
+          }
+          const resultEl = document.createElement("div");
+          resultEl.className = "vote-result";
+          resultEl.textContent = resultText;
+          voteCard.appendChild(resultEl);
+
+          if (lastResult.vote_count) {
+            const voteCountEl = document.createElement("div");
+            voteCountEl.className = "vote-counts";
+            const countText = Object.entries(lastResult.vote_count).map(([num, info]) => {
+              if (typeof info === 'object' && info.name !== undefined) {
+                return `${info.name}(${info.count}票)`;
+              }
+              return `${num}(${info}票)`;
+            }).join(" ");
+            voteCountEl.textContent = `得票统计：${countText}`;
+            voteCard.appendChild(voteCountEl);
+          }
+
+          if (lastResult.vote_details && lastResult.vote_details.length > 0) {
+            const voteDetailsEl = document.createElement("div");
+            voteDetailsEl.className = "vote-details";
+
+            const titleEl = document.createElement("div");
+            titleEl.className = "vote-details-title";
+            titleEl.textContent = "投票详情";
+            voteDetailsEl.appendChild(titleEl);
+
+            const listEl = document.createElement("div");
+            listEl.className = "vote-details-list";
+
+            lastResult.vote_details.forEach((detail) => {
+              const voterName = detail.voter_name || `${detail.voter_number}号`;
+              const targetPlayer = data.players.find(p => p.number === detail.voted_number);
+              const targetName = targetPlayer ? targetPlayer.name : `${detail.voted_number}号`;
+              
+              const itemEl = document.createElement("div");
+              itemEl.className = "vote-detail-item";
+              itemEl.textContent = `${voterName}→${targetName}`;
+              listEl.appendChild(itemEl);
+            });
+
+            voteDetailsEl.appendChild(listEl);
+            voteCard.appendChild(voteDetailsEl);
+          }
+        }
+
+        votePanel.appendChild(voteCard);
+      } else if (data.status === "ended") {
+        const voteCard = document.createElement("div");
+        voteCard.className = "vote-card";
+
+        if (lastResult) {
+          let resultText;
+          if (lastResult.type === "draw") {
+            resultText = "三人平票，游戏结束";
+          } else if (lastResult.eliminated_list) {
+            const names = lastResult.eliminated_list.map((e) => {
+              const roleText = e.is_undercover ? "卧底" : e.is_blank ? "空白" : "平民";
+              return `${e.name}${roleText}`;
+            });
+            resultText = `${names.join("、")}同时出局`;
+          } else {
+            resultText = lastResult.is_undercover
+              ? `${lastResult.name}卧底出局`
+              : lastResult.is_blank
+              ? `${lastResult.name}空白出局`
+              : `${lastResult.name}平民出局`;
+          }
+          const lastVoteEl = document.createElement("div");
+          lastVoteEl.className = "vote-status";
+          lastVoteEl.textContent = "最后投票结果";
+          voteCard.appendChild(lastVoteEl);
+
+          const resultEl = document.createElement("div");
+          resultEl.className = "vote-result";
+          resultEl.textContent = resultText;
+          voteCard.appendChild(resultEl);
+
+          if (lastResult.vote_count) {
+            const voteCountEl = document.createElement("div");
+            voteCountEl.className = "vote-counts";
+            const countText = Object.entries(lastResult.vote_count).map(([num, info]) => {
+              if (typeof info === 'object' && info.name !== undefined) {
+                return `${info.name}(${info.count}票)`;
+              }
+              return `${num}(${info}票)`;
+            }).join(" ");
+            voteCountEl.textContent = `得票统计：${countText}`;
+            voteCard.appendChild(voteCountEl);
+          }
+
+          if (lastResult.vote_details && lastResult.vote_details.length > 0) {
+            const voteDetailsEl = document.createElement("div");
+            voteDetailsEl.className = "vote-details";
+
+            const titleEl = document.createElement("div");
+            titleEl.className = "vote-details-title";
+            titleEl.textContent = "投票详情";
+            voteDetailsEl.appendChild(titleEl);
+
+            const listEl = document.createElement("div");
+            listEl.className = "vote-details-list";
+
+            lastResult.vote_details.forEach((detail) => {
+              const voterName = detail.voter_name || `${detail.voter_number}号`;
+              const targetPlayer = data.players.find(p => p.number === detail.voted_number);
+              const targetName = targetPlayer ? targetPlayer.name : `${detail.voted_number}号`;
+              
+              const itemEl = document.createElement("div");
+              itemEl.className = "vote-detail-item";
+              itemEl.textContent = `${voterName}→${targetName}`;
+              listEl.appendChild(itemEl);
+            });
+
+            voteDetailsEl.appendChild(listEl);
+            voteCard.appendChild(voteDetailsEl);
+          }
+        }
+
+        const gameResultEl = document.createElement("div");
+        gameResultEl.className = "vote-voters";
+        const winnerText = data.winner === "civilian" ? "平民胜利" : "卧底胜利";
+        const numbers = data.undercover_numbers.length > 0
+          ? data.undercover_numbers.map((number) => `${number}号`).join("、")
+          : "没有玩家";
+        gameResultEl.textContent = `游戏结束：${winnerText}！${numbers}是卧底`;
+        voteCard.appendChild(gameResultEl);
+
+        votePanel.appendChild(voteCard);
+      } else {
+        votePanel.classList.add("empty");
+        votePanel.innerHTML = "";
+      }
+
+      data.players.forEach((player) => {
+        const card = document.createElement("div");
+        const number = document.createElement("div");
+        const name = document.createElement("div");
+        card.className = `player-card ${player.eliminated ? "out" : ""}`;
+        number.className = "player-number";
+        name.className = "player-name";
+        number.textContent = `${player.number}号${player.is_you ? "（我）" : ""}`;
+        
+        let eliminatedText = "";
+        if (player.eliminated) {
+          let isUndercover = false;
+          let isBlank = false;
+          
+          if (data.status === "ended") {
+            isUndercover = data.undercover_numbers && data.undercover_numbers.includes(player.number);
+          }
+          
+          if (voteInfo.last_result) {
+            const lastResult = voteInfo.last_result;
+            if (lastResult.number === player.number) {
+              isUndercover = lastResult.is_undercover || lastResult.role === "undercover";
+              isBlank = lastResult.is_blank || lastResult.role === "blank";
+            } else if (lastResult.eliminated_list) {
+              const found = lastResult.eliminated_list.find(e => e.number === player.number);
+              if (found) {
+                isUndercover = found.is_undercover || found.role === "undercover";
+                isBlank = found.is_blank || found.role === "blank";
+              }
+            }
+          }
+          
+          const voteRecord = data.vote_record || [];
+          if (!isUndercover && !isBlank) {
+            for (const record of voteRecord) {
+              if (record.type === "eliminated" && record.number === player.number) {
+                isBlank = record.role === "blank";
+                if (record.role === "undercover") {
+                  isUndercover = true;
+                }
+                break;
+              }
+              if (record.type === "multiple_eliminated") {
+                const found = record.eliminated_list.find(e => e.number === player.number);
+                if (found) {
+                  isBlank = found.role === "blank";
+                  if (found.role === "undercover") {
+                    isUndercover = true;
+                  }
+                  break;
+                }
+              }
+            }
+          }
+          
+          if (isUndercover) {
+            eliminatedText = " · 卧底出局";
+          } else if (isBlank) {
+            eliminatedText = " · 空白出局";
+          } else {
+            eliminatedText = " · 平民出局";
+          }
+        }
+        
+        name.textContent = `${player.name}${eliminatedText}`;
+        card.append(number, name);
+
+        if (isPlaying && !player.eliminated && !isMyEliminated) {
+          const myVote = voteInfo.my_vote;
+          const hasVoted = myVote !== undefined && myVote !== null;
+          const isMyTarget = myVote === player.number;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = isMyTarget ? "selected" : "";
+          button.textContent = "投票";
+          button.disabled = hasVoted;
+          button.addEventListener("click", () => {
+            castVote(player.number).catch((error) => setStatus(error.message, true));
+          });
+          card.appendChild(button);
+        }
+
+        playersBox.append(card);
+      });
+    }
+
+    function renderMyCard(data) {
+      myCard.classList.toggle("has-seen", state.seenCount >= 1);
+      myCard.classList.toggle("has-seen-twice", state.seenCount >= 2);
+
+      if (data.status === "waiting") {
+        myCardValue.className = "my-card-value";
+        myCardValue.textContent = "等待房主开始";
+        return;
+      }
+
+      if (data.status === "ended") {
+        myCardValue.className = "my-card-value word";
+        myCardValue.textContent = formatCardWord(data.my_word || "");
+        return;
+      }
+
+      if (!state.wordVisible) {
+        myCardValue.className = "my-card-value";
+        myCardValue.textContent = `${data.my_number || "-"}号`;
+        return;
+      }
+
+      myCardValue.className = "my-card-value word";
+      myCardValue.textContent = formatCardWord(data.my_word || "");
+    }
+
+    function formatCardWord(word) {
+      const chars = Array.from(word);
+      if (chars.length <= 3) return word;
+      const rows = [];
+      for (let index = 0; index < chars.length; index += 3) {
+        rows.push(chars.slice(index, index + 3).join(""));
+      }
+      return rows.join("\n");
+    }
+
+    myCard.addEventListener("click", () => {
+      if (!state.data || state.data.status === "waiting") {
+        return;
+      }
+      const wasVisible = state.wordVisible;
+      state.wordVisible = !state.wordVisible;
+      if (!wasVisible && state.data.status === "playing") {
+        state.seenCount += 1;
+      }
+      renderMyCard(state.data);
+    });
+
+    createRoomButton.addEventListener("click", () => createRoom().catch((error) => setStatus(error.message, true)));
+    joinRoomButton.addEventListener("click", () => joinRoom().catch((error) => setStatus(error.message, true)));
+    startGameButton.addEventListener("click", () => startGame().catch((error) => setStatus(error.message, true)));
+    resetGameButton.addEventListener("click", () => resetGame().catch((error) => setStatus(error.message, true)));
+    leaveRoomButton.addEventListener("click", () => leaveRoom().catch((error) => setStatus(error.message, true)));
+    checkBurstButton.addEventListener("click", () => checkBurst().catch((error) => setStatus(error.message, true)));
+    playerNameInput.addEventListener("blur", () => savePlayerName());
+    playerNameInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        savePlayerName();
+        playerNameInput.blur();
+      }
+    });
+    burstWordInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        checkBurst().catch((error) => setStatus(error.message, true));
+      }
+    });
+    function getCurrentSettings() {
+      return {
+        player_count: Number(playerCountSelect.value),
+        undercover_count: Number(undercoverCountSelect.value),
+        blank_count: Number(blankCountSelect.value),
+        topic: wordTopicInput.value,
+        difficulty: wordDifficultySelect.value,
+        word_length: Number(wordLengthSelect.value),
+        model: deepseekModelSelect.value
+      };
+    }
+
+    async function updateRoomSettings() {
+      if (!state.roomCode || !state.playerId) return;
+      if (!state.data?.is_host) return;
+      if (state.data?.status !== "waiting") return;
+      state.settingsSyncing = true;
+      try {
+        const settings = getCurrentSettings();
+        const data = await api(`/api/rooms/${state.roomCode}/update_settings`, {
+          method: "POST",
+          body: { player_id: state.playerId, settings }
+        });
+        if (data.state) {
+          state.data = data.state;
+        }
+      } catch (e) {
+        console.error("更新设置失败:", e);
+      } finally {
+        state.settingsSyncing = false;
+      }
+    }
+
+    wordTopicPresetSelect.addEventListener("change", () => {
+      wordTopicInput.value = wordTopicPresetSelect.value;
+      updateRoomSettings();
+    });
+    playerCountSelect.addEventListener("change", () => {
+      const playerCount = Number(playerCountSelect.value);
+      if (Number(undercoverCountSelect.value) + Number(blankCountSelect.value) >= playerCount) {
+        blankCountSelect.value = "0";
+        undercoverCountSelect.value = "1";
+      }
+      updateRoomSettings();
+    });
+    undercoverCountSelect.addEventListener("change", updateRoomSettings);
+    blankCountSelect.addEventListener("change", updateRoomSettings);
+    wordTopicInput.addEventListener("change", updateRoomSettings);
+    wordDifficultySelect.addEventListener("change", updateRoomSettings);
+    wordLengthSelect.addEventListener("change", updateRoomSettings);
+    deepseekModelSelect.addEventListener("change", updateRoomSettings);
+    toggleSettingsButton.addEventListener("click", () => {
+      const collapsed = settingsPanel.classList.toggle("collapsed");
+      toggleSettingsButton.textContent = collapsed ? "显示设置" : "隐藏设置";
+    });
+
+    async function restoreSession() {
+      try {
+        const saved = JSON.parse(localStorage.getItem("undercoverRoomSession") || "{}");
+        if (!saved.roomCode || !saved.playerId) {
+          return;
+        }
+        state.roomCode = saved.roomCode;
+        state.playerId = saved.playerId;
+        if (saved.name) {
+          playerNameInput.value = saved.name;
+        }
+        roomCodeInput.value = saved.roomCode;
+        await pollState();
+        startPolling();
+        setStatus("已恢复房间");
+      } catch (error) {
+        clearSession();
+        setStatus("未恢复上次房间，请重新加入");
+      }
+    }
+
+    const savedName = loadPlayerName();
+    if (savedName) {
+      playerNameInput.value = savedName;
+    }
+
+    renderBurstControls(null);
+    restoreSession();
+  </script>
+</body>
+</html>

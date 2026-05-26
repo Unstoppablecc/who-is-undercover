@@ -1,0 +1,135 @@
+<svg width="1200" height="820" viewBox="0 0 1200 820" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="20" flood-color="#0f172a" flood-opacity="0.16"/>
+    </filter>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="9" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="820" fill="#f4f7fb"/>
+  <rect x="36" y="36" width="1128" height="748" rx="8" fill="#ffffff" stroke="#d7e0ea"/>
+
+  <text x="72" y="92" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="36" font-weight="800" fill="#172033">谁是卧底发牌器 · 白色桌游皮肤</text>
+  <text x="74" y="130" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="17" fill="#607086">更大的主卡牌、轻量设置区、清晰的房间状态和投票区域，适合安卓手机浏览器。</text>
+
+  <g transform="translate(80 190)">
+    <rect x="0" y="0" width="282" height="120" rx="8" fill="#f8fafc" stroke="#d7e0ea"/>
+    <rect x="0" y="0" width="282" height="4" rx="4" fill="#0f766e"/>
+    <text x="22" y="38" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="18" font-weight="800" fill="#172033">设计重点</text>
+    <text x="22" y="70" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" fill="#607086">设置收纳后，卡牌区域更突出</text>
+    <text x="22" y="96" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" fill="#607086">翻牌、二次翻牌、出局状态更醒目</text>
+  </g>
+
+  <g transform="translate(80 340)">
+    <rect x="0" y="0" width="282" height="156" rx="8" fill="#ffffff" stroke="#d7e0ea"/>
+    <text x="22" y="38" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="18" font-weight="800" fill="#172033">颜色状态</text>
+    <rect x="22" y="58" width="72" height="36" rx="8" fill="#e4f7ec" stroke="#9bd8b5"/>
+    <text x="110" y="82" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="14" fill="#607086">已看过一次</text>
+    <rect x="22" y="104" width="72" height="36" rx="8" fill="#fff1b8" stroke="#e0bd55"/>
+    <text x="110" y="128" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="14" fill="#607086">已看过两次</text>
+  </g>
+
+  <g transform="translate(80 530)">
+    <rect x="0" y="0" width="282" height="112" rx="8" fill="#ffe4e1" stroke="#f0a6a6"/>
+    <text x="22" y="42" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="18" font-weight="800" fill="#b42318">出局卡牌</text>
+    <text x="22" y="78" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" fill="#7f1d1d">浅红底色，保留玩家号和昵称</text>
+  </g>
+
+  <g transform="translate(436 56)" filter="url(#shadow)">
+    <rect x="0" y="0" width="382" height="728" rx="34" fill="#172033"/>
+    <rect x="14" y="18" width="354" height="692" rx="24" fill="#f4f7fb"/>
+    <rect x="166" y="30" width="50" height="6" rx="3" fill="#475569"/>
+
+    <g transform="translate(26 52)">
+      <rect x="0" y="0" width="330" height="154" rx="8" fill="#ffffff" stroke="#bcc9d8" filter="url(#softShadow)"/>
+      <rect x="0" y="0" width="330" height="3" rx="3" fill="#0f766e"/>
+      <g font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="11" font-weight="700" fill="#607086">
+        <text x="13" y="26">昵称</text>
+        <text x="176" y="26">房间码</text>
+        <text x="13" y="83">玩家人数</text>
+        <text x="121" y="83">卧底数量</text>
+        <text x="229" y="83">难度</text>
+      </g>
+      <rect x="12" y="34" width="145" height="34" rx="8" fill="#f8fafc" stroke="#d7e0ea"/>
+      <text x="25" y="56" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="13" font-weight="700" fill="#172033">阿富</text>
+      <rect x="176" y="34" width="64" height="34" rx="8" fill="#f8fafc" stroke="#d7e0ea"/>
+      <text x="191" y="56" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="13" font-weight="700" fill="#172033">8421</text>
+      <rect x="250" y="34" width="66" height="34" rx="8" fill="#0f766e"/>
+      <text x="263" y="56" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="13" font-weight="800" fill="#ffffff">加入</text>
+
+      <rect x="12" y="92" width="90" height="32" rx="8" fill="#f8fafc" stroke="#d7e0ea"/>
+      <text x="48" y="113" font-family="Arial, sans-serif" font-size="13" font-weight="800" fill="#172033">6</text>
+      <rect x="120" y="92" width="90" height="32" rx="8" fill="#f8fafc" stroke="#d7e0ea"/>
+      <text x="156" y="113" font-family="Arial, sans-serif" font-size="13" font-weight="800" fill="#172033">1</text>
+      <rect x="228" y="92" width="88" height="32" rx="8" fill="#f8fafc" stroke="#d7e0ea"/>
+      <text x="250" y="113" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="13" font-weight="800" fill="#172033">中等</text>
+
+      <rect x="12" y="132" width="70" height="20" rx="10" fill="#ffffff" stroke="#d7e0ea"/>
+      <text x="25" y="146" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="11" font-weight="700" fill="#607086">房间 8421</text>
+      <rect x="88" y="132" width="66" height="20" rx="10" fill="#ffffff" stroke="#d7e0ea"/>
+      <text x="102" y="146" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="11" font-weight="700" fill="#607086">6/6</text>
+      <rect x="160" y="132" width="72" height="20" rx="10" fill="#ffffff" stroke="#d7e0ea"/>
+      <text x="173" y="146" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="11" font-weight="700" fill="#607086">进行中</text>
+    </g>
+
+    <g transform="translate(26 220)">
+      <rect x="0" y="0" width="330" height="226" rx="8" fill="#ffffff" stroke="#bcc9d8" filter="url(#softShadow)"/>
+      <rect x="10" y="10" width="310" height="206" rx="6" fill="none" stroke="#b8ddd8"/>
+      <text x="112" y="132" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="46" font-weight="900" fill="#172033">3号</text>
+    </g>
+
+    <g transform="translate(26 462)">
+      <rect x="0" y="0" width="330" height="98" rx="8" fill="#ffffff" stroke="#d7e0ea"/>
+      <rect x="12" y="12" width="306" height="26" rx="6" fill="#eaf1ff" stroke="#c8d7ff"/>
+      <text x="114" y="30" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="13" font-weight="800" fill="#2563eb">投票进度：3/6</text>
+      <rect x="12" y="48" width="306" height="38" rx="6" fill="#fff4d6" stroke="#f0d28a"/>
+      <text x="96" y="72" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" font-weight="850" fill="#a16207">上一轮：5号出局</text>
+    </g>
+
+    <g transform="translate(26 576)">
+      <g font-family="Arial, 'Microsoft YaHei', sans-serif">
+        <rect x="0" y="0" width="101" height="58" rx="8" fill="#ffffff" stroke="#d7e0ea"/>
+        <text x="10" y="22" font-size="13" font-weight="800" fill="#0f766e">1号</text>
+        <text x="10" y="43" font-size="15" font-weight="750" fill="#172033">玩家A</text>
+
+        <rect x="114" y="0" width="101" height="58" rx="8" fill="#e4f7ec" stroke="#9bd8b5"/>
+        <text x="124" y="22" font-size="13" font-weight="800" fill="#0f766e">2号</text>
+        <text x="124" y="43" font-size="15" font-weight="750" fill="#172033">玩家B</text>
+
+        <rect x="229" y="0" width="101" height="58" rx="8" fill="#ffe4e1" stroke="#f0a6a6"/>
+        <text x="239" y="22" font-size="13" font-weight="800" fill="#b42318">5号</text>
+        <text x="239" y="43" font-size="15" font-weight="750" fill="#172033">出局</text>
+
+        <rect x="0" y="66" width="101" height="58" rx="8" fill="#ffffff" stroke="#d7e0ea"/>
+        <text x="10" y="88" font-size="13" font-weight="800" fill="#0f766e">4号</text>
+        <text x="10" y="109" font-size="15" font-weight="750" fill="#172033">玩家D</text>
+
+        <rect x="114" y="66" width="101" height="58" rx="8" fill="#fff1b8" stroke="#e0bd55"/>
+        <text x="124" y="88" font-size="13" font-weight="800" fill="#a16207">3号（我）</text>
+        <text x="124" y="109" font-size="15" font-weight="750" fill="#172033">已翻两次</text>
+
+        <rect x="229" y="66" width="101" height="58" rx="8" fill="#ffffff" stroke="#d7e0ea"/>
+        <text x="239" y="88" font-size="13" font-weight="800" fill="#0f766e">6号</text>
+        <text x="239" y="109" font-size="15" font-weight="750" fill="#172033">玩家F</text>
+      </g>
+    </g>
+  </g>
+
+  <g transform="translate(872 198)">
+    <rect x="0" y="0" width="244" height="92" rx="8" fill="#e5f4f1" stroke="#b8ddd8"/>
+    <text x="24" y="38" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="18" font-weight="800" fill="#0b5f59">主色</text>
+    <text x="24" y="66" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" fill="#0b5f59">青绿色，用在操作和房间状态</text>
+  </g>
+  <g transform="translate(872 318)">
+    <rect x="0" y="0" width="244" height="92" rx="8" fill="#eaf1ff" stroke="#c8d7ff"/>
+    <text x="24" y="38" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="18" font-weight="800" fill="#2563eb">信息区</text>
+    <text x="24" y="66" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" fill="#2563eb">投票进度更容易扫一眼看懂</text>
+  </g>
+  <g transform="translate(872 438)">
+    <rect x="0" y="0" width="244" height="92" rx="8" fill="#fff4d6" stroke="#f0d28a"/>
+    <text x="24" y="38" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="18" font-weight="800" fill="#a16207">结果区</text>
+    <text x="24" y="66" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="15" fill="#a16207">游戏结果和出局信息更醒目</text>
+  </g>
+</svg>

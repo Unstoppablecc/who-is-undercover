@@ -1,0 +1,2 @@
+# 当前 server.py 使用 Python 标准库即可运行。
+# 如果后续改为 FastAPI/WebSocket，可再添加 fastapi、uvicorn、httpx。
